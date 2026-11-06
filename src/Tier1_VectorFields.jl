@@ -1,9 +1,5 @@
-module Tier1_VectorFields
-
 using StaticArrays
 using LinearAlgebra
-
-export BoundedVectorFieldPerturber, calculate_stability_scalar, generate_directional_perturbation
 
 struct BoundedVectorFieldPerturber{N}
     stability_floor::Float64
@@ -42,5 +38,3 @@ function generate_directional_perturbation(
     
     return perturbed_state, boundary_intact
 end
-
-end # module
