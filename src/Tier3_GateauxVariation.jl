@@ -1,8 +1,4 @@
-module Tier3_GateauxVariation
-
 using LinearAlgebra
-
-export GateauxSusceptibilityEngine, evaluate_parameterized_metric, compute_susceptibility_tensor
 
 struct GateauxSusceptibilityEngine
     epsilon::Float64
@@ -36,5 +32,3 @@ function compute_susceptibility_tensor(
     
     return (g_perturbed - g_base) ./ engine.epsilon
 end
-
-end # module
