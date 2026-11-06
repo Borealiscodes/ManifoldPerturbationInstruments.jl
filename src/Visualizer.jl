@@ -1,8 +1,4 @@
-module Visualizer
-
 using Plots
-
-export render_manifold_mesh
 
 function render_manifold_mesh(radius::Float64 = 1.0, steps::Int = 100)
     println("🎨 RENDERING MANIFOLD GEOMETRIC WARP FIELDS...")
@@ -11,7 +7,6 @@ function render_manifold_mesh(radius::Float64 = 1.0, steps::Int = 100)
     p = plot(title="Manifold Invariant Warp Fields (Native Julia)",
              xlabel="x¹", ylabel="x²", aspect_ratio=:equal, legend=false, size=(600,600))
              
-    # Render geometric warped lattice
     for y in grid_range
         xw_line = Float64[]
         yw_line = Float64[]
@@ -23,10 +18,7 @@ function render_manifold_mesh(radius::Float64 = 1.0, steps::Int = 100)
         plot!(p, xw_line, yw_line, color=:royalblue, alpha=0.3)
     end
     
-    # Ensure save directory footprint is clear
     mkpath("docs")
     savefig(p, "docs/manifold_warp_profile.png")
     println("✅ EXPORTED INTERCEPT CHART TO docs/manifold_warp_profile.png")
 end
-
-end # module
