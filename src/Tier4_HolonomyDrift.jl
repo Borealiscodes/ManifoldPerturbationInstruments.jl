@@ -1,8 +1,4 @@
-module Tier4_HolonomyDrift
-
 using LinearAlgebra
-
-export HolonomyDriftEngine, evaluate_connection_form, compute_loop_holonomy
 
 struct HolonomyDriftEngine
     steps::Int
@@ -64,5 +60,3 @@ function exp_matrix_taylor(A::Matrix{Float64})::Matrix{Float64}
     end
     return result
 end
-
-end # module
