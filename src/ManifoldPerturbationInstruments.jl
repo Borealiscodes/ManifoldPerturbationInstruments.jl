@@ -4,13 +4,13 @@ using LinearAlgebra
 using StaticArrays
 using Plots
 
-export BoundedVectorFieldPerturber, generate_directional_perturbation
-export SymmetricLieEvolutionEngine, compute_metric_evolution_step
-export GateauxSusceptibilityEngine, compute_susceptibility_tensor
-export HolonomyDriftEngine, compute_loop_holonomy
+export BoundedVectorFieldPerturber, calculate_stability_scalar, generate_directional_perturbation
+export SymmetricLieEvolutionEngine, compute_metric_evolution_step, enforce_metric_symmetry
+export GateauxSusceptibilityEngine, compute_susceptibility_tensor, evaluate_parameterized_metric
+export HolonomyDriftEngine, evaluate_connection_form, compute_loop_holonomy
 export render_manifold_mesh
 
-# Include separate structural module files
+# Load individual mathematical components
 include("Tier1_VectorFields.jl")
 include("Tier2_LieEvolution.jl")
 include("Tier3_GateauxVariation.jl")
