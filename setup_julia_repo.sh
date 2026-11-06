@@ -1,32 +1,32 @@
 #!/bin/bash
 # ==========================================================================
-# SETUP_JULIA_REPO.SH: AUTOMATED WORKSPACE ENGINE FOR PURE-JULIA OPERATORS
+# SETUP_JULIA_REPO.SH: PROPRIETARY WORKSPACE GENERATOR ENGINE (MPI.JL)
 # ==========================================================================
 set -e
 
 echo "🏗️  INITIALIZING MANIFOLDPERTURBATIONINSTRUMENTS.JL WORKSPACE DIRECTORIES..."
 
-# 1. Generate Structural Layout
+# 1. Generate Clean Layout Architecture
 mkdir -p src
 mkdir -p test
 mkdir -p docs
 
-# 2. Write .gitignore
+# 2. Write Pristine .gitignore
 cat << 'EOF' > .gitignore
-# Julia compilation cache and dependency artifacts
+# Julia compilation cache and deployment artifacts
 Manifest.toml
 julia-*.log
 *.png
 *.csv
 
-# Local operating system overrides
+# Local operating system stubs
 .DS_Store
 __pycache__/
 .vscode/
 .idea/
 EOF
 
-# 3. Write Complete Project.toml
+# 3. Write Complete, Validated Project.toml
 cat << 'EOF' > Project.toml
 name = "ManifoldPerturbationInstruments"
 uuid = "a640d82b-8b5e-4cde-93e1-7599257d42ab"
@@ -44,7 +44,7 @@ Plots = "1.38"
 StaticArrays = "1.5"
 EOF
 
-# 4. Write Master Package Entrypoint (src/ManifoldPerturbationInstruments.jl)
+# 4. Write Master Entrypoint (src/ManifoldPerturbationInstruments.jl)
 cat << 'EOF' > src/ManifoldPerturbationInstruments.jl
 module ManifoldPerturbationInstruments
 
@@ -58,6 +58,7 @@ export GateauxSusceptibilityEngine, compute_susceptibility_tensor, evaluate_para
 export HolonomyDriftEngine, evaluate_connection_form, compute_loop_holonomy
 export render_manifold_mesh
 
+# Include components cleanly as flat structures into the main module namespace
 include("Tier1_VectorFields.jl")
 include("Tier2_LieEvolution.jl")
 include("Tier3_GateauxVariation.jl")
@@ -67,7 +68,7 @@ include("Visualizer.jl")
 end # module
 EOF
 
-# 5. Write Tier 1: Vector Fields (src/Tier1_VectorFields.jl)
+# 5. Write Tier 1 Engine (src/Tier1_VectorFields.jl)
 cat << 'EOF' > src/Tier1_VectorFields.jl
 using StaticArrays
 using LinearAlgebra
@@ -111,7 +112,7 @@ function generate_directional_perturbation(
 end
 EOF
 
-# 6. Write Tier 2: Lie Evolution (src/Tier2_LieEvolution.jl)
+# 6. Write Tier 2 Engine (src/Tier2_LieEvolution.jl)
 cat << 'EOF' > src/Tier2_LieEvolution.jl
 using LinearAlgebra
 
@@ -135,8 +136,12 @@ function compute_metric_evolution_step(
     covariant_gradient_V::Matrix{Float64},
     forcing_tensor::Matrix{Float64},
     dt::Float64 = 0.01
-    )::Matrix{Float64}
+)::Matrix{Float64}
     
+    if size(base_metric) != size(ricci_tensor) || size(base_metric) != size(covariant_gradient_V)
+        throw(DimensionMismatch("All input tensors must share uniform dimensionality."))
+    end
+
     g_symmetric = enforce_metric_symmetry(base_metric)
     R_symmetric = enforce_metric_symmetry(ricci_tensor)
     F_symmetric = enforce_metric_symmetry(forcing_tensor)
@@ -150,7 +155,7 @@ function compute_metric_evolution_step(
 end
 EOF
 
-# 7. Write Tier 3: Gâteaux Variation (src/Tier3_GateauxVariation.jl)
+# 7. Write Tier 3 Engine (src/Tier3_GateauxVariation.jl)
 cat << 'EOF' > src/Tier3_GateauxVariation.jl
 using LinearAlgebra
 
@@ -174,7 +179,11 @@ function compute_susceptibility_tensor(
     base_metric::Matrix{Float64},
     V::Vector{Float64},
     delta_V::Vector{Float64}
-    )::Matrix{Float64}
+)::Matrix{Float64}
+    
+    if size(base_metric, 1) != length(V) || length(V) != length(delta_V)
+        throw(DimensionMismatch("Vector tracking parameters must match metric tensor dimensions."))
+    end
     
     perturbed_V = V + engine.epsilon .* delta_V
     g_perturbed = evaluate_parameterized_metric(engine, base_metric, perturbed_V)
@@ -184,7 +193,7 @@ function compute_susceptibility_tensor(
 end
 EOF
 
-# 8. Write Tier 4: Holonomy Drift (src/Tier4_HolonomyDrift.jl)
+# 8. Write Tier 4 Engine (src/Tier4_HolonomyDrift.jl)
 cat << 'EOF' > src/Tier4_HolonomyDrift.jl
 using LinearAlgebra
 
@@ -211,9 +220,13 @@ function evaluate_connection_form(engine::HolonomyDriftEngine, state::Vector{Flo
 end
 
 function compute_loop_holonomy(engine::HolonomyDriftEngine, dim::Int)::Matrix{Float64}
-    H = eye_matrix(dim)
+    if dim < 2
+        throw(ArgumentError("Holonomy loop tracking requires a space dimension >= 2."))
+    end
+    
+    H = Matrix{Float64}(I, dim, dim)
     thetas = range(0, stop=2*pi, length=engine.steps)
-    dt = thetas[2] - thetas[1]
+    dt = 2*pi / engine.steps
     
     for t in thetas
         x = engine.radius * cos(t)
@@ -228,22 +241,16 @@ function compute_loop_holonomy(engine::HolonomyDriftEngine, dim::Int)::Matrix{Fl
         
         Gamma_matrix = evaluate_connection_form(engine, current_state)
         differential_operator = Gamma_matrix .* (dx + dy)
-        H = exp_matrix_fallback(differential_operator) * H
+        H = exp_matrix_taylor(differential_operator) * H
     end
     return H
 end
 
-function eye_matrix(dim::Int)::Matrix{Float64}
-    mat = zeros(dim, dim)
-    for i in 1:dim mat[i,i] = 1.0 end
-    return mat
-end
-
-function exp_matrix_fallback(A::Matrix{Float64})::Matrix{Float64}
-    # Clean Taylor expansion for matrix exponential integration steps
-    I = eye_matrix(size(A, 1))
-    term = copy(I)
-    result = copy(I)
+function exp_matrix_taylor(A::Matrix{Float64})::Matrix{Float64}
+    dim = size(A, 1)
+    I_mat = Matrix{Float64}(I, dim, dim)
+    term = copy(I_mat)
+    result = copy(I_mat)
     for i in 1:5
         term = (term * A) ./ i
         result += term
@@ -252,7 +259,7 @@ function exp_matrix_fallback(A::Matrix{Float64})::Matrix{Float64}
 end
 EOF
 
-# 9. Write Visualizer Layer (src/Visualizer.jl)
+# 9. Write Visualizer (src/Visualizer.jl)
 cat << 'EOF' > src/Visualizer.jl
 using Plots
 
@@ -263,7 +270,6 @@ function render_manifold_mesh(radius::Float64 = 1.0, steps::Int = 100)
     p = plot(title="Manifold Invariant Warp Fields (Native Julia)",
              xlabel="x¹", ylabel="x²", aspect_ratio=:equal, legend=false, size=(600,600))
              
-    # Render geometric warped lattice
     for y in grid_range
         xw_line = Float64[]
         yw_line = Float64[]
@@ -275,13 +281,13 @@ function render_manifold_mesh(radius::Float64 = 1.0, steps::Int = 100)
         plot!(p, xw_line, yw_line, color=:royalblue, alpha=0.3)
     end
     
-    # Save visualization matrix cleanly
+    mkpath("docs")
     savefig(p, "docs/manifold_warp_profile.png")
     println("✅ EXPORTED INTERCEPT CHART TO docs/manifold_warp_profile.png")
 end
 EOF
 
-# 10. Write Test Harness Suite (test/runtests.jl)
+# 10. Write Test Harness Matrix (test/runtests.jl)
 cat << 'EOF' > test/runtests.jl
 using Test
 using StaticArrays
@@ -303,11 +309,12 @@ using ManifoldPerturbationInstruments
     @testset "Tier 2: Symmetric Lie Derivatives" begin
         engine = SymmetricLieEvolutionEngine()
         g0 = [1.0 0.0; 0.0 1.0]
-        R  = [0.1 0.2; 0.4 0.1] # Non-symmetric input vector
+        R  = [0.1 0.2; 0.4 0.1] 
         grad = [0.05 0.1; 0.2 0.05]
+        F  = [1.0 0.0; 0.0 1.0]
         
-        g_next = compute_metric_evolution_step(engine, g0, R, grad, g0, 0.01)
-        @test g_next[1,2] == g_next[2,1] # Symmetry Verification Gate
+        g_next = compute_metric_evolution_step(engine, g0, R, grad, F, 0.01)
+        @test g_next == g_next'
     end
 
     @testset "Tier 3: Gâteaux Variations" begin
@@ -317,19 +324,27 @@ using ManifoldPerturbationInstruments
         dV = [0.1, 0.2]
         
         S = compute_susceptibility_tensor(engine, g0, V, dV)
-        @test size(S) == (2,2)
+        @test size(S) == (2, 2)
     end
 
     @testset "Tier 4: Path-Ordered Holonomy" begin
-        engine = HolonomyDriftEngine()
-        H = compute_loop_holonomy(engine, 3)
-        @test det(H) > 0.0
-    end
+Use code with caution.
+engine = HolonomyDriftEngine()
+H = compute_loop_holonomy(engine, 3)
+@test det(H) > 0.0
+end
 end
 EOF
 
-# 11. Configure Generic Git Authorization Signing Stubs Locally
+11. Auto-Initialize Independent Git Identity Repositories Localized
+
 git init .
 git config --local user.name "Borealis S. Hedling"
 git config --local user.email "none@localhost"
+chmod +x src/*.jl || true
+echo -e "\n🚀 PURE-JULIA CORE WORKSPACE READY."
+echo "Execute: julia --project=. -e 'using Pkg; Pkg.instantiate(); include("test/runtests.jl")' to run the suite."
+EOF
+chmod +x setup_julia_repo.sh
+./setup_julia_repo.sh
 
