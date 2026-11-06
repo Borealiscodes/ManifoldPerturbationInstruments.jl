@@ -1,0 +1,14 @@
+name = "ManifoldPerturbationInstruments"
+uuid = "a640d82b-8b5e-4cde-93e1-7599257d42ab"
+authors = ["Borealis S. Hedling"]
+version = "2.0.0"
+
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838f94c1cc2a"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+StaticArrays = "90137ffa-7385-5640-81b9-e152d5228c2f"
+
+[compat]
+julia = "1.10"
+Plots = "1.38"
+StaticArrays = "1.5"
