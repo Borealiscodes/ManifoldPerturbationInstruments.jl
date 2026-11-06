@@ -1,8 +1,4 @@
-module Tier2_LieEvolution
-
 using LinearAlgebra
-
-export SymmetricLieEvolutionEngine, enforce_metric_symmetry, compute_metric_evolution_step
 
 struct SymmetricLieEvolutionEngine
     alpha::Float64
@@ -34,7 +30,6 @@ function compute_metric_evolution_step(
     R_symmetric = enforce_metric_symmetry(ricci_tensor)
     F_symmetric = enforce_metric_symmetry(forcing_tensor)
     
-    # L_V g_ij = grad_i V_j + grad_j V_i
     lie_derivative_g = covariant_gradient_V + covariant_gradient_V'
     
     dg_dt = -2.0 .* R_symmetric + engine.alpha .* lie_derivative_g + engine.beta .* F_symmetric
@@ -42,5 +37,3 @@ function compute_metric_evolution_step(
     
     return enforce_metric_symmetry(evolved_metric)
 end
-
-end # module
