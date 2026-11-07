@@ -77,4 +77,6 @@ Use code with caution.
 This instrument toolkit is an original diagnostic platform developed to audit representation spaces.
 * Mathematical Authorship: All geometric operators, symmetric Lie evolution structures, infinite-dimensional Gâteaux susceptibility variations, and path-ordered holonomy drift formulations contained in this repository are original derivations authored entirely by Borealis S. Hedling (NDH-RESEARCH-PILOT).
 * Workspace Independence: This repository functions as an independent diagnostic sandbox. It operates completely outside the scope of external project teams, public interest foundations, or independent systems engineers. All implementation choices, software design, and analytical parameters are the sole work and responsibility of the repository author.
-With the final Julia README.md completely populated and aligned, let me know if you would like me to generate a GitHub Actions .github/workflows/ci.yml validation file to automate execution monitoring or prepare the Zenodo distribution code blueprint to push this toolbox live.
+
+
+Hedling, B. S. (2026). The Language Frontier in Spectral Interpretation: Comparative Analysis of Bounded Gâteaux Perturbations and Path-Ordered Holonomy Exp-Loops in Python and Native Static Julia Runtimes (RFC-005) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24024694
